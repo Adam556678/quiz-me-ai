@@ -9,3 +9,4 @@ pypdf
 faiss-cpu
 groq
 langchain_groq
+sentence-transformers
