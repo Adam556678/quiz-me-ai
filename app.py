@@ -137,7 +137,10 @@ if st.session_state.processed:
         f"""
             <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #e6e6e6;">
                 <p style="font-size: 1.1em; color: #333;"><strong>Question:</strong></p>
-                <p>{st.session_state.question}</p>
+                
+                <!-- ADDED a style to this paragraph -->
+                <p style="color: #333;">{st.session_state.question}</p> 
+                
             </div>
         """,
         unsafe_allow_html=True,
