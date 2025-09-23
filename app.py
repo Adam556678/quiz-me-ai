@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 from langchain.vectorstores import FAISS
-from langchain.embeddings import OllamaEmbeddings
+from langchain_community.embeddings import OllamaEmbeddings
 from langchain_groq import ChatGroq
 
 from doc_processor import DocProcessor
@@ -10,9 +10,6 @@ from question_generator import QuestionGenerator
 
 
 def process_document(file_path_or_url, source, model_name):
-
-    # start processing
-    st.session_state.processed = True
     
     # Process the document
     processor = DocProcessor()
@@ -36,11 +33,9 @@ def process_document(file_path_or_url, source, model_name):
     # Initialize the generator and the evaluator
     st.session_state.generator = QuestionGenerator(llm, vector_db)
     st.session_state.evaluator = Evaluator(llm, vector_db)
-        
-    # end processing
-    st.session_state.processed = False
-        
-
+    
+    # file processing done
+    st.session_state.processed = True
         
 
 st.set_page_config(page_title="QuizMe AI", page_icon="🤖")
@@ -67,12 +62,12 @@ source = st.sidebar.radio(
     key="source_type"
 )
 
-model = st.selectbox(
+model = st.sidebar.selectbox(
     "Choose the Language Model",
     (
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
-        "openai/gpt-oss-120b"
+        "llama-3.3-70b-versatile", # LLama-3 70b
+        "llama-3.1-8b-instant", # LLama-3 8b
+        "openai/gpt-oss-120b" # GPT
     ),
     key="model_name"
 )
@@ -102,8 +97,9 @@ st.divider()
 
 if (uploaded_file is not None or url_input) and not st.session_state.processed:
     if st.button("Start Quiz Engine"):
-        with st.spinner("Processing document.... This may take a moment"):
+        with st.spinner("Processing the document.... This may take a while"):
             if uploaded_file:
+                os.makedirs("tempDir", exist_ok=True)
                 
                 # Save the file 
                 with open(os.path.join("tempDir", uploaded_file.name), "wb") as f:
@@ -113,17 +109,21 @@ if (uploaded_file is not None or url_input) and not st.session_state.processed:
                 # process the user input
                 process_document(filepath, source, model) 
 
+            if url_input:
+                # process the user input
+                process_document(url_input, source, model) 
+                
 
 # --- Question generation section ---
 if st.session_state.processed:
     st.info("Quiz engine is ready. Click below to generate your first question!")
 
     # Button to generate a new question
-    if st.button("🧠 Generate New Question", disabled=st.session_state.generating):
+    if st.button("🧠 Generate a Question", disabled=st.session_state.generating):
         st.session_state.generating = True
         st.session_state.question = None # Clear previous question
         st.session_state.feedback = None # Clear previous feedback
-        with st.spinner("The AI of thinking of a question...."):
+        with st.spinner("The AI is thinking of a question...."):
             st.session_state.question = st.session_state.generator.generate_question()
         st.session_state.generating = False
         st.rerun()
