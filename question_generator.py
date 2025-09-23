@@ -1,26 +1,20 @@
 import os
 import random 
-from langchain_groq import ChatGroq
 from langchain_core.prompts import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 )
+from langchain_groq import ChatGroq
 from langchain.chains.llm import LLMChain
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 load_dotenv()
 
 class QuestionGenerator:
-    def __init__(self, model_name : str, vectorDB : FAISS):
-
+    def __init__(self, llm : ChatGroq, vectorDB : FAISS):
         self.vector_db = vectorDB
-        
-        # Create the Groq LLM
-        self.model = ChatGroq(
-            groq_proxy=os.environ["GROQ_API_KEY"],
-            model=model_name
-        )
+        self.llm = llm
         
         # create the chat prompt
         self.prompt = self.create_prompt()

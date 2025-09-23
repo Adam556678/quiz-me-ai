@@ -2,12 +2,18 @@ import streamlit as st
 import os
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OllamaEmbeddings
+from langchain_groq import ChatGroq
 
 from doc_processor import DocProcessor
+from evaluator import Evaluator
 from question_generator import QuestionGenerator
 
 
-def generate_answer(file_path_or_url, source, model_name):
+def process_document(file_path_or_url, source, model_name):
+
+    # start processing
+    st.session_state.processed = True
+    
     # Process the document
     processor = DocProcessor()
     if source == "PDF":
@@ -17,14 +23,23 @@ def generate_answer(file_path_or_url, source, model_name):
     else: # Web page
         chunks = processor.process_web_page(file_path_or_url)
         
-    # Create Vector Database
+    # Create the Vector Database
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
     vector_db = FAISS.from_documents(chunks, embedding=embeddings)
 
-    # Initialize the generator
-    generator = QuestionGenerator(model_name, vector_db)
+    # Create the Groq LLM
+    llm = ChatGroq(
+        groq_proxy=os.environ["GROQ_API_KEY"],
+        model=model_name
+    )
 
-    # TODO: Implement the Evaluator Class
+    # Initialize the generator and the evaluator
+    st.session_state.generator = QuestionGenerator(llm, vector_db)
+    st.session_state.evaluator = Evaluator(llm, vector_db)
+        
+    # end processing
+    st.session_state.processed = False
+        
 
         
 
@@ -85,7 +100,7 @@ elif url_input:
 st.divider()
 
 
-if (uploaded_file is not None or url_input) and st.session_state.processed:
+if (uploaded_file is not None or url_input) and not st.session_state.processed:
     if st.button("Start Quiz Engine"):
         with st.spinner("Processing document.... This may take a moment"):
             if uploaded_file:
@@ -93,18 +108,59 @@ if (uploaded_file is not None or url_input) and st.session_state.processed:
                 # Save the file 
                 with open(os.path.join("tempDir", uploaded_file.name), "wb") as f:
                     f.write(uploaded_file.getbuffer())
-                flepath = os.path.join("tempDir", uploaded_file.name)
-                # TODO: Call the generate answer function 
+                filepath = os.path.join("tempDir", uploaded_file.name)
+                
+                # process the user input
+                process_document(filepath, source, model) 
 
 
 # --- Question generation section ---
 if st.session_state.processed:
     st.info("Quiz engine is ready. Click below to generate your first question!")
 
-    # Button to generate a nwe question
+    # Button to generate a new question
     if st.button("🧠 Generate New Question", disabled=st.session_state.generating):
         st.session_state.generating = True
         st.session_state.question = None # Clear previous question
         st.session_state.feedback = None # Clear previous feedback
         with st.spinner("The AI of thinking of a question...."):
-            
+            st.session_state.question = st.session_state.generator.generate_question()
+        st.session_state.generating = False
+        st.rerun()
+
+    st.divider()
+    
+    # Display question and answer if a question has been generated
+    st.markdown(
+        f"""
+            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #e6e6e6;">
+                <p style="font-size: 1.1em; color: #333;"><strong>Question:</strong></p>
+                <p>{st.session_state.question}</p>
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.write("") # Add a space
+
+    # User answer area
+    with st.form(key='answer_form'):
+        user_answer = st.text_area(
+            "Your Answer",
+            placeholder="Type you answer here..."
+        )    
+        submit_button = st.form_submit_button(label='Submit Answer')
+
+        if submit_button and user_answer:
+            with st.spinner("AI is cehcking your answer..."):
+                st.session_state.feedback = st.session_state.evaluator.validate_answer(
+                    st.session_state.question,
+                    user_answer
+                )
+                
+    # Display AI feedback
+    if st.session_state.feedback:
+        if st.session_state.feedback.strip().upper().startswith("CORRECT"):
+            st.success(st.session_state.feedback)
+        else:
+            st.error(st.session_state.feedback)
+    
