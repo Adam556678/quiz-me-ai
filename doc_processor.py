@@ -1,6 +1,12 @@
-from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
+from langchain_community.document_loaders import(
+    WebBaseLoader,
+    PyPDFLoader,
+    UnstructuredPDFLoader    
+)  
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+
+import logging
 
 class DocProcessor:
     
@@ -18,9 +24,24 @@ class DocProcessor:
     
     def process_pdf(self, pdf : str):
         """Process PDF given by user"""
-        loader = PyPDFLoader(pdf)
-        document = loader.load()
-        return self.chunk_document(document)
+        
+        try:
+            # try a loader for unstructured PDFs
+            loader = UnstructuredPDFLoader(pdf, mode="single")
+            document = loader.load()
+            return self.chunk_document(document)            
+        except Exception as e:
+            logging.error(f"Failed to process PDF with the UnstructuredLoader : {e}")
+            
+            # Switch to a simple PDF Loader if
+            # the first one failed
+            try:
+                loader = PyPDFLoader(pdf)
+                document = loader.load()
+                return self.chunk_document(document)
+            except Exception as e:
+                logging.error("Failed to process the PDF")
+                return []
         
     def process_web_page(self, link : str):
         """Process web page given by user"""
