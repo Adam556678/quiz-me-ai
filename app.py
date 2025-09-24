@@ -10,6 +10,16 @@ from doc_processor import DocProcessor
 from evaluator import Evaluator
 from question_generator import QuestionGenerator
 
+def reset_quiz_state():
+    """Resets the session state variables related to the quiz."""
+    st.session_state.processed = False
+    st.session_state.question = None
+    st.session_state.feedback = None
+    if 'generator' in st.session_state:
+        del st.session_state.generator
+    if 'evaluator' in st.session_state:
+        del st.session_state.evaluator
+
 
 def process_document(file_path_or_url, source, model_name):
     
@@ -61,7 +71,8 @@ st.sidebar.header("📂 Input Source")
 source = st.sidebar.radio(
     "Choose your document source:",
     ("PDF", "Text File", "Web Page"),
-    key="source_type"
+    key="source_type",
+    on_change=reset_quiz_state
 )
 
 model = st.sidebar.selectbox(
@@ -79,11 +90,22 @@ uploaded_file = None
 url_input = None
 
 if source == "PDF":
-    uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
+    uploaded_file = st.file_uploader(
+        "Upload a PDF",
+        type=["pdf"],
+        on_change=reset_quiz_state
+    )
 elif source == "Text File":
-    uploaded_file = st.file_uploader("Upload a text file", type=["txt"])
+    uploaded_file = st.file_uploader(
+        "Upload a text file", 
+        type=["txt"],
+        on_change=reset_quiz_state
+    )
 else:
-    url_input = st.text_input("Enter webpage URL")
+    url_input = st.text_input(
+        "Enter webpage URL",
+        on_change=reset_quiz_state
+    )
 
 # Process input
 if uploaded_file is not None:
