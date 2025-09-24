@@ -155,7 +155,7 @@ if st.session_state.processed:
         with st.spinner("The AI is thinking of a question...."):
             st.session_state.question = st.session_state.generator.generate_question()
         st.session_state.generating = False
-        # st.rerun()
+        st.rerun()
 
     # --- Question and answer section ---
     # Column Layouts
