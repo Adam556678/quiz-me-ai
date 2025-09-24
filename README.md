@@ -8,4 +8,4 @@ This project inverts the typical "chat-with-your-pdf" model. Here, the AI takes 
 
 ## 🚀 Live Demo
 
-**Experience DocuTutor live:** [https://YOUR-STREAMLIT-APP-URL.streamlit.app/](https://gamjgnfzqtpnvygec8wflz.streamlit.app/)
+**Experience DocuTutor live:** [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gamjgnfzqtpnvygec8wflz.streamlit.app/)
