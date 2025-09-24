@@ -107,6 +107,7 @@ else:
         on_change=reset_quiz_state
     )
 
+
 # Process input
 if uploaded_file is not None:
     st.success(f"{uploaded_file.name} uploaded successfully!")
@@ -136,7 +137,11 @@ if (uploaded_file is not None or url_input) and not st.session_state.processed:
             if url_input:
                 # process the user input
                 process_document(url_input, source, model) 
-                
+            
+            # Start a new run
+            st.rerun()
+
+    # st.divider()
 
 # --- Question generation section ---
 if st.session_state.processed:
@@ -150,32 +155,37 @@ if st.session_state.processed:
         with st.spinner("The AI is thinking of a question...."):
             st.session_state.question = st.session_state.generator.generate_question()
         st.session_state.generating = False
-        st.rerun()
+        # st.rerun()
 
-    st.divider()
-    
-    # Display question and answer if a question has been generated
+    # --- Question and answer section ---
+    # Column Layouts
+    col1, col2 = st.columns(2)
+
     if st.session_state.question:
-        with st.container(border=True):
-            st.write("**Question:**")
-            st.write(st.session_state.question)
 
-        st.write("") # Add a space
+        # AI question area 
+        with col1:
+            with st.container(border=True):
+                st.write("**Question:**")
+                st.write(st.session_state.question)
+
+            st.write("") # Add a space
 
         # User answer area
-        with st.form(key='answer_form'):
-            user_answer = st.text_area(
-                "Your Answer",
-                placeholder="Type you answer here..."
-            )    
-            submit_button = st.form_submit_button(label='Submit Answer')
+        with col2:
+            with st.form(key='answer_form'):
+                user_answer = st.text_area(
+                    "Your Answer",
+                    placeholder="Type your answer here..."
+                )    
+                submit_button = st.form_submit_button(label='Submit Answer')
 
-            if submit_button and user_answer:
-                with st.spinner("AI is cehcking your answer..."):
-                    st.session_state.feedback = st.session_state.evaluator.validate_answer(
-                        st.session_state.question,
-                        user_answer
-                    )
+                if submit_button and user_answer:
+                    with st.spinner("AI is cehcking your answer..."):
+                        st.session_state.feedback = st.session_state.evaluator.validate_answer(
+                            st.session_state.question,
+                            user_answer
+                        )
                 
     # Display AI feedback
     if st.session_state.feedback:
