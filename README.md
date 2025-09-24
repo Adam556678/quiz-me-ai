@@ -75,8 +75,8 @@ To run this project on your own machine, follow these steps.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/pdf-ai-tutor.git
-    cd pdf-ai-tutor
+    git clone https://github.com/Adam556678/quiz-me-ai.git
+    cd quiz-me-ai
     ```
 
 2.  **Create a virtual environment and activate it:**
