@@ -13,3 +13,4 @@ sentence-transformers
 unstructured[pdf]
 langchain>=0.1.0
 langchain-text-splitters
+langchain_classic
