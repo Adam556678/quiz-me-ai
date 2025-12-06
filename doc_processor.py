@@ -3,7 +3,8 @@ from langchain_community.document_loaders import(
     PyPDFLoader,
     UnstructuredPDFLoader    
 )  
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 
 import logging
