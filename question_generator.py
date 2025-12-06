@@ -6,7 +6,8 @@ from langchain_core.prompts import (
     HumanMessagePromptTemplate
 )
 from langchain_groq import ChatGroq
-from langchain.chains.llm import LLMChain
+# from langchain.chains.llm import LLMChain
+from langchain_classic.chains.llm import LLMChain
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 load_dotenv()
