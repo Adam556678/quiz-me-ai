@@ -3,7 +3,7 @@ import os
 import tempfile
 
 # from langchain.vectorstores import FAISS
-langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 
